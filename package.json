@@ -1,0 +1,15 @@
+{
+  "name": "schemesathi-ai",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "node node_modules/vite/bin/vite.js frontend --config frontend/vite.config.ts",
+    "build": "npm run build --workspace frontend",
+    "test": "npm run test --workspace frontend",
+    "lint": "npm run lint --workspace frontend",
+    "format": "npm run format --workspace frontend",
+    "format:check": "npm run format:check --workspace frontend"
+  }
+}

@@ -1,0 +1,62 @@
+services:
+  api:
+    build:
+      context: ./backend
+    environment:
+      API_CORS_ORIGINS: ${API_CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,http://localhost:8080}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-development}
+      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost:8080}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      OFFICIAL_SOURCE_ALLOWLIST: ${OFFICIAL_SOURCE_ALLOWLIST:-}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-}
+      EMBEDDING_API_URL: ${EMBEDDING_API_URL:-}
+      EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:-}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-}
+      KNOWLEDGE_MAX_AGE_DAYS: ${KNOWLEDGE_MAX_AGE_DAYS:-365}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-}
+      GROQ_API_URL: ${GROQ_API_URL:-https://api.groq.com/openai/v1/chat/completions}
+      GROQ_TIMEOUT_SECONDS: ${GROQ_TIMEOUT_SECONDS:-20}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-schemesathi}
+      POSTGRES_USER: ${POSTGRES_USER:-schemesathi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-schemesathi} -d ${POSTGRES_DB:-schemesathi}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
