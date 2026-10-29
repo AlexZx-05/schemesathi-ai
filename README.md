@@ -2,9 +2,11 @@
 
 **Your guide to government schemes and opportunities.**
 
-SchemeSathi AI is a civic-tech application that helps people explore
-government schemes, understand recorded eligibility information, prepare
-application documents, and find government job notices.
+SchemeSathi AI is a multi-agent-style civic-tech application that helps people
+explore government schemes, understand recorded eligibility information,
+prepare application documents, and find government job notices. Its assistant
+uses a LangGraph workflow to coordinate focused guidance components for scheme
+discovery, eligibility, documents, and application steps.
 
 ## Why I made this
 
@@ -26,10 +28,44 @@ guarantee approval, or submit applications.
 - Save schemes, prepare document checklists, and track your own application
   progress.
 
-The assistant uses Groq to explain information when it is configured. It must
-use verified information stored in the app for scheme facts. If there is no
-verified information for a question, it should say so rather than make up an
-answer.
+When configured, Groq explains information retrieved by the assistant. The
+workflow uses a deterministic rules engine for preliminary eligibility checks
+and verified, stored sources for scheme facts. These focused components are
+coordinated by the workflow; they are not separate autonomous AI models. If
+there is no verified information for a question, the assistant should say so
+rather than make up an answer.
+
+### What each assistant component does
+
+The assistant is one coordinated workflow, not a group of independent AI
+agents. Each component has a specific job:
+
+1. **Request understanding:** Identifies whether you are asking about schemes,
+   eligibility, documents, application steps, or a general question.
+2. **Scheme discovery:** Searches the app's non-demo, administrator-verified
+   scheme records for relevant information.
+3. **Official document search:** When the approved knowledge-search service is
+   configured, looks for relevant passages from current, verified documents.
+   Search results are treated as source material, not instructions.
+4. **Eligibility assessment:** For an eligibility question, the Python rules
+   engine compares supported scheme criteria with the profile information you
+   provided. Groq does not make the eligibility decision.
+5. **Document guidance:** For a document question, uses the documents recorded
+   for a verified scheme. It does not guess which documents are required.
+6. **Application guidance:** For an application question, explains recorded
+   instructions and links to a recorded official portal. It does not submit an
+   application.
+7. **Source validation:** Checks that retrieved evidence is backed by a
+   verified source before it can support an answer.
+8. **Answer and safety checks:** When Groq is configured, it explains the
+   supplied evidence in simpler language. A final check limits unsupported
+   claims and attaches citations from the app's records.
+
+Not every question uses every component. For example, an eligibility question
+uses the rules engine, while a document question uses the recorded checklist.
+Simple greetings are answered directly and do not need Groq or scheme search.
+The assistant currently focuses on scheme information; it does not yet search
+the government jobs catalogue or monitor new job postings.
 
 ### About scheme and job listings
 
